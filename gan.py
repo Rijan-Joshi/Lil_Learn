@@ -28,7 +28,9 @@ transform = transforms.Compose(
     [
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081)),
-        transforms.Lambda(lambda x: x.view(-1)),
+        transforms.Lambda(
+            lambda x: x.view(-1)
+        ),  # Transforms Image from (28, 28) to (784)
     ]
 )
 
@@ -42,3 +44,16 @@ test_data = datasets.MNIST(
 
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=64, shuffle=True)
+
+# Model for Generators and Discriminators
+
+# Generator Model
+
+
+class Generator(nn.Module):
+    def __init__(self): ...
+
+
+# Optimizers
+
+optimizer = torch.optim.Adam()
