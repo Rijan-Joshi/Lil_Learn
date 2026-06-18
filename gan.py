@@ -1,5 +1,7 @@
 # Imports
+import os
 
+from numpy.random import random_sample
 from sympy import discriminant
 from tqdm import tqdm
 import numpy as np
@@ -11,6 +13,7 @@ import torchsummary
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+from torchvision.utils import save_image, vutils
 
 import torchvision
 from torchvision import datasets, transforms
@@ -95,7 +98,6 @@ class Discriminator(nn.Module):
 
 
 # Connecting models to cuda if available
-
 generator = Generator().to(device)
 discriminator = Discriminator().to(device)
 
@@ -104,3 +106,35 @@ lr = 0.0002
 g_optimizer = torch.optim.Adam(generator.parameters(), lr=lr)
 d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=lr)
 criterion = nn.BCELoss()
+
+# Image Plotting Utitlity: create random noise, feed the generator, generate and then save the image for each epoch
+random_dim = 100
+
+
+def save_generated_images(generator, random_examples, epoch):
+    generator.eval()
+    with generator.no_eval():
+        noise = torch.randn(random_examples, random_dim, device=device)
+        generated = generator(noise)  # Returns 28 * 28 images
+        generated = (generated + 1) / 2  # Changing pixel values from [-1, 1] to [0,1]
+
+        os.makedirs("generated_images", exist_ok=True)
+
+        grid = vutils.make_grid(generated, nrow=10, normalize=True)
+        grid_np = grid.cpu().numpy().transpose((1, 2, 0))
+
+        plt.figure(figsize=(10, 10))
+        plt.axis("off")
+        plt.title("Generated Digits")
+        plt.imshow(grid_np)
+        plt.show()
+
+        save_image(generated, f"generated_images/images_epoch_{epoch}.png", nrow=10)
+
+    generator.train()
+
+
+# Training Function
+
+
+def train(): ...
