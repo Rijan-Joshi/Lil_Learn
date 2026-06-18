@@ -1,5 +1,6 @@
 # Imports
 
+from sympy import discriminant
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -51,7 +52,7 @@ test_loader = DataLoader(test_data, batch_size=64, shuffle=True)
 
 # Generator Model
 class Generator(nn.Module):
-    def __init__(self, latent_dim):
+    def __init__(self, latent_dim=100):
         super(Generator, self).__init__()
 
         self.model = nn.Sequential(
@@ -73,7 +74,7 @@ class Generator(nn.Module):
 
 # Discriminator Model
 class Discriminator(nn.Module):
-    def __init__(self, image_dim):
+    def __init__(self, image_dim=784):
         super(Discriminator, self).__init__()
         self.image_dim = image_dim
 
@@ -93,6 +94,13 @@ class Discriminator(nn.Module):
         return self.model(X)
 
 
-# Optimizers
+# Connecting models to cuda if available
 
-optimizer = torch.optim.Adam()
+generator = Generator().to(device)
+discriminator = Discriminator().to(device)
+
+# Optimizers and Loss Functions
+lr = 0.0002
+g_optimizer = torch.optim.Adam(generator.parameters(), lr=lr)
+d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=lr)
+criterion = nn.BCELoss()
