@@ -13,7 +13,8 @@ import torchsummary
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, dataloader
-from torchvision.utils import save_image, vutils
+from torchvision.utils import save_image
+import torchvision.utils as vutils
 
 import torchvision
 from torchvision import datasets, transforms
@@ -114,7 +115,7 @@ random_dim = 100
 
 def save_generated_images(generator, random_examples, epoch):
     generator.eval()
-    with generator.no_eval():
+    with torch.no_grad():
         noise = torch.randn(random_examples, random_dim, device=device)
         generated = generator(noise)  # Returns 28 * 28 images
         generated = (generated + 1) / 2  # Changing pixel values from [-1, 1] to [0,1]
@@ -138,26 +139,26 @@ def save_generated_images(generator, random_examples, epoch):
 # Training Function: generate fake images using generator and train on both real and fake images by adding up the loss values
 epochs = 400
 
+
 def train():
-    for epoch in range(1, epochs +1):
+    for epoch in range(1, epochs + 1):
 
         progress_bar = tqdm(
-            enumerate(train_loader), 
-            total = len(dataloader), 
-            desc = f"Epoch [{epoch:2d}/ {epochs:2d}]"
-            leave = True
+            enumerate(train_loader),
+            total=len(train_loader),
+            desc=f"Epoch [{epoch:2d}/ {epochs:2d}]",
+            leave=True,
         )
 
-
         for batch_idx, (real_images, _) in progress_bar:
-            
+
             batch_size = real_images.size(0)
 
             # Real Images and real labels i.e. 1
             real_images = real_images.to(device)
             real_labels = torch.ones(batch_size, 1).to(device)
 
-            #Fake Images and fake labels i.e. 0
+            # Fake Images and fake labels i.e. 0
             latent_dim = 100
             noise = torch.randn(batch_size, latent_dim).to(device)
             fake_images = generator(noise)
@@ -176,7 +177,7 @@ def train():
 
             # Total Loss
             total_d_loss = real_loss + fake_loss
-            
+
             # Backward Pass
             total_d_loss.backward()
             d_optimizer.step()
@@ -191,17 +192,13 @@ def train():
             g_optimizer.step()
 
             progress_bar.set_postfix(
-                D_loss = f"{total_d_loss.item():.4f}", 
-                G_loss = f"{g_loss.item():.4f}"
+                D_loss=f"{total_d_loss.item():.4f}", G_loss=f"{g_loss.item():.4f}"
             )
 
         if epoch % 5 == 0:
             save_generated_images(generator, 100, epoch)
     print("Trainig complted")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     train()
-
-
-
-
