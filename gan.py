@@ -12,7 +12,7 @@ import torch
 import torchsummary
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, dataloader
 from torchvision.utils import save_image, vutils
 
 import torchvision
@@ -46,6 +46,7 @@ test_data = datasets.MNIST(
     root="./data", train=False, download=True, transform=transform
 )
 
+batch_size = 64
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=64, shuffle=True)
 
@@ -134,7 +135,73 @@ def save_generated_images(generator, random_examples, epoch):
     generator.train()
 
 
-# Training Function
+# Training Function: generate fake images using generator and train on both real and fake images by adding up the loss values
+epochs = 400
+
+def train():
+    for epoch in range(1, epochs +1):
+
+        progress_bar = tqdm(
+            enumerate(train_loader), 
+            total = len(dataloader), 
+            desc = f"Epoch [{epoch:2d}/ {epochs:2d}]"
+            leave = True
+        )
 
 
-def train(): ...
+        for batch_idx, (real_images, _) in progress_bar:
+            
+            batch_size = real_images.size(0)
+
+            # Real Images and real labels i.e. 1
+            real_images = real_images.to(device)
+            real_labels = torch.ones(batch_size, 1).to(device)
+
+            #Fake Images and fake labels i.e. 0
+            latent_dim = 100
+            noise = torch.randn(batch_size, latent_dim).to(device)
+            fake_images = generator(noise)
+            fake_labels = torch.zeros(batch_size, 1).to(device)
+
+            # Train Discriminator
+            d_optimizer.zero_grad()
+
+            # Loss on real images
+            real_outputs = discriminator(real_images)
+            real_loss = criterion(real_outputs, real_labels)
+
+            # Calculate loss on fake images
+            fake_outputs = discriminator(fake_images.detach())
+            fake_loss = criterion(fake_outputs, fake_labels)
+
+            # Total Loss
+            total_d_loss = real_loss + fake_loss
+            
+            # Backward Pass
+            total_d_loss.backward()
+            d_optimizer.step()
+
+            # Train Generator
+            g_optimizer.zero_grad()
+
+            outputs = discriminator(fake_images)
+            g_loss = criterion(outputs, real_labels)
+
+            g_loss.backward()
+            g_optimizer.step()
+
+            progress_bar.set_postfix(
+                D_loss = f"{total_d_loss.item():.4f}", 
+                G_loss = f"{g_loss.item():.4f}"
+            )
+
+        if epoch % 5 == 0:
+            save_generated_images(generator, 100, epoch)
+    print("Trainig complted")
+
+if __name__ == '__main__':
+    train()
+
+
+
+
