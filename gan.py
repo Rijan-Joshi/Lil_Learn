@@ -27,10 +27,10 @@ np.random.seed(100)
 transform = transforms.Compose(
     [
         transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081)),
-        transforms.Lambda(
-            lambda x: x.view(-1)
-        ),  # Transforms Image from (28, 28) to (784)
+        transforms.Normalize((0.5), (0.5)),
+        # transforms.Lambda(
+        #     lambda x: x.view(-1)
+        # ),  # Transforms Image from (28, 28) to (784)
     ]
 )
 
@@ -45,13 +45,52 @@ test_data = datasets.MNIST(
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=64, shuffle=True)
 
+
 # Model for Generators and Discriminators
 
+
 # Generator Model
-
-
 class Generator(nn.Module):
-    def __init__(self): ...
+    def __init__(self, latent_dim):
+        super(Generator, self).__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(latent_dim, 256),
+            nn.LeakyReLU(0.2),
+            nn.Linear(256, 512),
+            nn.LeakyReLU(0.2),
+            nn.Linear(512, 1024),
+            nn.LeakyReLU(0.2),
+            nn.Linear(1024, 784),
+            nn.Tanh(),
+        )
+
+    def forward(self, X):
+        X = self.model(X)
+        X = X.view(-1, 1, 28, 28)
+        return X
+
+
+# Discriminator Model
+class Discriminator(nn.Module):
+    def __init__(self, image_dim):
+        super(Discriminator, self).__init__()
+        self.image_dim = image_dim
+
+        self.model = nn.Sequential(
+            nn.Linear(image_dim, 512),
+            nn.LeakyReLU(0.2),
+            nn.Dropout(0.3),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(0.2),
+            nn.Dropout(0.3),
+            nn.Linear(256, 1),
+            nn.Sigmoid(),  # Output probability
+        )
+
+    def forward(self, X):
+        X = X.view(-1, self.image_dim)
+        return self.model(X)
 
 
 # Optimizers
