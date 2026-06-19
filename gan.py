@@ -40,7 +40,7 @@ transform = transforms.Compose(
 )
 
 train_data = datasets.MNIST(
-    root="./data", train=False, download=True, transform=transform
+    root="./data", train=True, download=True, transform=transform
 )
 
 test_data = datasets.MNIST(
@@ -118,20 +118,25 @@ def save_generated_images(generator, random_examples, epoch):
     with torch.no_grad():
         noise = torch.randn(random_examples, random_dim, device=device)
         generated = generator(noise)  # Returns 28 * 28 images
-        generated = (generated + 1) / 2  # Changing pixel values from [-1, 1] to [0,1]
+        # generated = (generated + 1) / 2  # Changing pixel values from [-1, 1] to [0,1]
 
         os.makedirs("generated_images", exist_ok=True)
 
-        grid = vutils.make_grid(generated, nrow=10, normalize=True)
-        grid_np = grid.cpu().numpy().transpose((1, 2, 0))
+        # grid = vutils.make_grid(generated, nrow=10, normalize=True)
+        # grid_np = grid.cpu().numpy().transpose((1, 2, 0))
 
-        plt.figure(figsize=(10, 10))
-        plt.axis("off")
-        plt.title("Generated Digits")
-        plt.imshow(grid_np)
-        plt.show()
+        # plt.figure(figsize=(10, 10))
+        # plt.axis("off")
+        # plt.title("Generated Digits")
+        # plt.imshow(grid_np)
+        # plt.show()
 
-        save_image(generated, f"generated_images/images_epoch_{epoch}.png", nrow=10)
+        save_image(
+            generated,
+            f"generated_images/images_epoch_{epoch}.png",
+            nrow=10,
+            normalize=True,
+        )
 
     generator.train()
 
@@ -197,7 +202,8 @@ def train():
 
         if epoch % 5 == 0:
             save_generated_images(generator, 100, epoch)
-    print("Trainig complted")
+
+    print("Training complted")
 
 
 if __name__ == "__main__":
