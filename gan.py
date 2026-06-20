@@ -161,7 +161,7 @@ def train():
 
             # Real Images and real labels i.e. 1
             real_images = real_images.to(device)
-            real_labels = torch.ones(batch_size, 1).to(device)
+            real_labels = torch.full((batch_size, 1), 0.9).to(device)
 
             # Fake Images and fake labels i.e. 0
             latent_dim = 100
