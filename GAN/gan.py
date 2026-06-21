@@ -203,7 +203,7 @@ def train():
         if epoch % 5 == 0:
             save_generated_images(generator, 100, epoch)
 
-    print("Training complted")
+    print("Training completed")
 
 
 if __name__ == "__main__":
