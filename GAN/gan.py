@@ -12,11 +12,11 @@ import torch
 import torchsummary
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader, dataloader
+from torch.utils.data import Dataset, DataLoader
 from torchvision.utils import save_image
 import torchvision.utils as vutils
 
-import torchvision
+
 from torchvision import datasets, transforms
 
 
